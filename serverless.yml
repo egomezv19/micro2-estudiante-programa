@@ -1,0 +1,148 @@
+service: api-estudiantes
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+  iam:
+    role: arn:aws:iam::353553552499:role/LabRole
+
+functions:
+  buscarEstudiante:
+    handler: buscarEstudiante.lambda_handler
+    events:
+      - http:
+          path: /estudiantes/buscar
+          method: post
+          cors: true
+          integration: lambda
+
+  listarProgramas:
+    handler: listarProgramas.lambda_handler
+    events:
+      - http:
+          path: /programas/listar
+          method: post
+          cors: true
+          integration: lambda
+
+  buscarInscripcion:
+    handler: buscarInscripcion.lambda_handler
+    events:
+      - http:
+          path: /inscripciones/buscar
+          method: post
+          cors: true
+          integration: lambda
+
+resources:
+  Resources:
+
+    # Tabla Estudiante
+    EstudianteTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: estudiante_t
+        AttributeDefinitions:
+          - AttributeName: id_estudiante
+            AttributeType: S
+          - AttributeName: dni
+            AttributeType: S
+          - AttributeName: nombre
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: nro_tel
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id_estudiante
+            KeyType: HASH
+          - AttributeName: dni
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: nombre-index
+            KeySchema:
+              - AttributeName: nombre
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        LocalSecondaryIndexes:
+          - IndexName: email-index
+            KeySchema:
+              - AttributeName: id_estudiante
+                KeyType: HASH
+              - AttributeName: email
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    # Tabla Programa
+    ProgramaTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: programa_t
+        AttributeDefinitions:
+          - AttributeName: ID_Programa
+            AttributeType: S
+          - AttributeName: Fecha_Inicio
+            AttributeType: S
+          - AttributeName: Nombre
+            AttributeType: S
+          - AttributeName: Fecha_Fin
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ID_Programa
+            KeyType: HASH
+          - AttributeName: Fecha_Inicio
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: nombre-index
+            KeySchema:
+              - AttributeName: Nombre
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        LocalSecondaryIndexes:
+          - IndexName: fecha-fin-index
+            KeySchema:
+              - AttributeName: ID_Programa
+                KeyType: HASH
+              - AttributeName: Fecha_Fin
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    # Tabla Inscripcion
+    InscripcionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: inscripcion_t
+        AttributeDefinitions:
+          - AttributeName: ID_Inscripcion
+            AttributeType: S
+          - AttributeName: Estado
+            AttributeType: S
+          - AttributeName: Fecha_Inscripcion
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ID_Inscripcion
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: estado-index
+            KeySchema:
+              - AttributeName: Estado
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        LocalSecondaryIndexes:
+          - IndexName: fecha-inscripcion-index
+            KeySchema:
+              - AttributeName: ID_Inscripcion
+                KeyType: HASH
+              - AttributeName: Fecha_Inscripcion
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
