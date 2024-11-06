@@ -1,148 +1,75 @@
-service: api-estudiantes
+service: estudiante-service
 
 provider:
   name: aws
-  runtime: python3.12
+  runtime: python3.9  # Define el runtime de Python 3.9 para la Lambda
   region: us-east-1
   iam:
-    role: arn:aws:iam::353553552499:role/LabRole
+    role: arn:aws:iam::353553552499:role/LabRole  # ARN del rol IAM que especificaste
 
 functions:
   buscarEstudiante:
-    handler: buscarEstudiante.lambda_handler
+    handler: handler.lambda_handler  # Define el archivo y la función manejadora (handler.py en este ejemplo)
+    environment:
+      DYNAMODB_TABLE: Estudiante  # Nombre de la tabla DynamoDB en variable de entorno
     events:
       - http:
-          path: /estudiantes/buscar
-          method: post
-          cors: true
-          integration: lambda
-
-  listarProgramas:
-    handler: listarProgramas.lambda_handler
-    events:
-      - http:
-          path: /programas/listar
-          method: post
-          cors: true
-          integration: lambda
-
-  buscarInscripcion:
-    handler: buscarInscripcion.lambda_handler
-    events:
-      - http:
-          path: /inscripciones/buscar
-          method: post
-          cors: true
-          integration: lambda
+          path: estudiantes/buscar
+          method: get
+          request:
+            parameters:
+              querystrings:
+                ID-Estudiante: false
+                Email: false
 
 resources:
   Resources:
-
-    # Tabla Estudiante
     EstudianteTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: estudiante_t
+        TableName: Estudiante
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
-          - AttributeName: id_estudiante
+          - AttributeName: ID-Estudiante
             AttributeType: S
-          - AttributeName: dni
+          - AttributeName: DNI
             AttributeType: S
-          - AttributeName: nombre
+          - AttributeName: Email
             AttributeType: S
-          - AttributeName: email
-            AttributeType: S
-          - AttributeName: nro_tel
+          - AttributeName: Nro_Tel
             AttributeType: S
         KeySchema:
-          - AttributeName: id_estudiante
+          - AttributeName: ID-Estudiante
             KeyType: HASH
-          - AttributeName: dni
+          - AttributeName: DNI
             KeyType: RANGE
-        BillingMode: PAY_PER_REQUEST
-        GlobalSecondaryIndexes:
-          - IndexName: nombre-index
-            KeySchema:
-              - AttributeName: nombre
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
         LocalSecondaryIndexes:
-          - IndexName: email-index
+          - IndexName: EmailIndex
             KeySchema:
-              - AttributeName: id_estudiante
+              - AttributeName: ID-Estudiante
                 KeyType: HASH
-              - AttributeName: email
+              - AttributeName: Email
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-
-    # Tabla Programa
-    ProgramaTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: programa_t
-        AttributeDefinitions:
-          - AttributeName: ID_Programa
-            AttributeType: S
-          - AttributeName: Fecha_Inicio
-            AttributeType: S
-          - AttributeName: Nombre
-            AttributeType: S
-          - AttributeName: Fecha_Fin
-            AttributeType: S
-        KeySchema:
-          - AttributeName: ID_Programa
-            KeyType: HASH
-          - AttributeName: Fecha_Inicio
-            KeyType: RANGE
-        BillingMode: PAY_PER_REQUEST
-        GlobalSecondaryIndexes:
-          - IndexName: nombre-index
+          - IndexName: NroTelIndex
             KeySchema:
-              - AttributeName: Nombre
+              - AttributeName: ID-Estudiante
                 KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-        LocalSecondaryIndexes:
-          - IndexName: fecha-fin-index
-            KeySchema:
-              - AttributeName: ID_Programa
-                KeyType: HASH
-              - AttributeName: Fecha_Fin
+              - AttributeName: Nro_Tel
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-
-    # Tabla Inscripcion
-    InscripcionTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: inscripcion_t
-        AttributeDefinitions:
-          - AttributeName: ID_Inscripcion
-            AttributeType: S
-          - AttributeName: Estado
-            AttributeType: S
-          - AttributeName: Fecha_Inscripcion
-            AttributeType: S
-        KeySchema:
-          - AttributeName: ID_Inscripcion
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
         GlobalSecondaryIndexes:
-          - IndexName: estado-index
+          - IndexName: EmailGSI
             KeySchema:
-              - AttributeName: Estado
+              - AttributeName: Email
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
-        LocalSecondaryIndexes:
-          - IndexName: fecha-inscripcion-index
+          - IndexName: DNIGSI
             KeySchema:
-              - AttributeName: ID_Inscripcion
+              - AttributeName: DNI
                 KeyType: HASH
-              - AttributeName: Fecha_Inscripcion
-                KeyType: RANGE
             Projection:
               ProjectionType: ALL
