@@ -1,12 +1,12 @@
 org: enzogomez
-service: api-estudiantes
+service: microservice1
 
 provider:
   name: aws
   runtime: python3.12
   iam:
     role: arn:aws:iam::353553552499:role/LabRole
-  region: us-east-1  # especifica tu región preferida
+  
 
 resources:
   Resources:
@@ -34,7 +34,7 @@ resources:
             KeyType: HASH
           - AttributeName: DNI
             KeyType: RANGE
-        BillingMode: PAY_PER_REQUEST  # Habilita el modo baja demanda
+        BillingMode: PAY_PER_REQUEST  # Modo de facturación "on-demand"
         
         # Definición del Índice Local Secundario (LSI) para Promedio
         LocalSecondaryIndexes:
