@@ -2,29 +2,24 @@ service: estudiante-service
 
 provider:
   name: aws
-  runtime: python3.9  # Define el runtime de Python
+  runtime: python3.9
   region: us-east-1
   iam:
-    role: arn:aws:iam::353553552499:role/LabRole  # ARN del rol IAM que especificaste
+    role: arn:aws:iam::353553552499:role/LabRole
 
 functions:
   buscarEstudiante:
-    handler: handler.lambda_handler
+    handler: handler.buscar_estudiante
     environment:
-      DYNAMODB_TABLE: Estudiante  # Nombre de la tabla DynamoDB en variable de entorno
+      DYNAMODB_TABLE: Estudiante
     events:
       - http:
           path: estudiantes/buscar
-          method: get
+          method: post
           cors: true
-          request:
-            parameters:
-              querystrings:
-                ID-Estudiante: false
-                Email: false
 
   eliminarEstudiante:
-    handler: handler.eliminar_estudiante  # Define el manejador de eliminar
+    handler: handler.eliminar_estudiante
     environment:
       DYNAMODB_TABLE: Estudiante
     events:
@@ -32,14 +27,9 @@ functions:
           path: estudiantes/eliminar
           method: delete
           cors: true
-          request:
-            parameters:
-              querystrings:
-                ID-Estudiante: true
-                DNI: true
 
   modificarEstudiante:
-    handler: handler.modificar_estudiante  # Define el manejador de modificar
+    handler: handler.modificar_estudiante
     environment:
       DYNAMODB_TABLE: Estudiante
     events:
@@ -54,7 +44,7 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: Estudiante
-        BillingMode: PAY_PER_REQUEST  # Configuración para modo bajo demanda
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: ID-Estudiante
             AttributeType: S
