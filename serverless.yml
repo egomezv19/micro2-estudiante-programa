@@ -1,91 +1,68 @@
-service: estudiante-service
+org: enzogomez
+service: api-estudiantes
 
 provider:
   name: aws
-  runtime: python3.9
-  region: us-east-1
+  runtime: python3.12
   iam:
     role: arn:aws:iam::353553552499:role/LabRole
-
-functions:
-  buscarEstudiante:
-    handler: handler.buscar_estudiante
-    environment:
-      DYNAMODB_TABLE: Estudiante
-    events:
-      - http:
-          path: estudiantes/buscar
-          method: post
-          cors: true
-
-  eliminarEstudiante:
-    handler: handler.eliminar_estudiante
-    environment:
-      DYNAMODB_TABLE: Estudiante
-    events:
-      - http:
-          path: estudiantes/eliminar
-          method: delete
-          cors: true
-
-  modificarEstudiante:
-    handler: handler.modificar_estudiante
-    environment:
-      DYNAMODB_TABLE: Estudiante
-    events:
-      - http:
-          path: estudiantes/modificar
-          method: put
-          cors: true
+  region: us-east-1  # especifica tu región preferida
 
 resources:
   Resources:
-    EstudianteTable:
+    EstudiantesTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: Estudiante
-        BillingMode: PAY_PER_REQUEST
+        TableName: Estudiantes
         AttributeDefinitions:
-          - AttributeName: ID-Estudiante
+          - AttributeName: Universidad
             AttributeType: S
           - AttributeName: DNI
             AttributeType: S
-          - AttributeName: Email
+          - AttributeName: Promedio
+            AttributeType: N
+          - AttributeName: Carrera
             AttributeType: S
-          - AttributeName: Nro_Tel
+          - AttributeName: Ciudad
+            AttributeType: S
+          - AttributeName: Fecha_Nacimiento
+            AttributeType: S
+          - AttributeName: ID_Estudiante
             AttributeType: S
         KeySchema:
-          - AttributeName: ID-Estudiante
+          - AttributeName: Universidad
             KeyType: HASH
           - AttributeName: DNI
             KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST  # Habilita el modo baja demanda
+        
+        # Definición del Índice Local Secundario (LSI) para Promedio
         LocalSecondaryIndexes:
-          - IndexName: EmailIndex
+          - IndexName: LSI_Promedio
             KeySchema:
-              - AttributeName: ID-Estudiante
+              - AttributeName: Universidad
                 KeyType: HASH
-              - AttributeName: Email
+              - AttributeName: Promedio
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-          - IndexName: NroTelIndex
-            KeySchema:
-              - AttributeName: ID-Estudiante
-                KeyType: HASH
-              - AttributeName: Nro_Tel
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
+        
+        # Definición de Índices Globales Secundarios (GSI)
         GlobalSecondaryIndexes:
-          - IndexName: EmailGSI
+          - IndexName: GSI_Carrera_Promedio
             KeySchema:
-              - AttributeName: Email
+              - AttributeName: Carrera
                 KeyType: HASH
+              - AttributeName: Promedio
+                KeyType: RANGE
             Projection:
               ProjectionType: ALL
-          - IndexName: DNIGSI
+            
+          - IndexName: GSI_FechaNacimiento_IDEstudiante
             KeySchema:
-              - AttributeName: DNI
+              - AttributeName: Fecha_Nacimiento
                 KeyType: HASH
+              - AttributeName: ID_Estudiante
+                KeyType: RANGE
             Projection:
               ProjectionType: ALL
