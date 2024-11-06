@@ -2,14 +2,14 @@ service: estudiante-service
 
 provider:
   name: aws
-  runtime: python3.9  # Define el runtime de Python 3.9 para la Lambda
+  runtime: python3.9  # Define el runtime de Python
   region: us-east-1
   iam:
     role: arn:aws:iam::353553552499:role/LabRole  # ARN del rol IAM que especificaste
 
 functions:
   buscarEstudiante:
-    handler: handler.lambda_handler  # Define el archivo y la función manejadora (handler.py en este ejemplo)
+    handler: handler.lambda_handler
     environment:
       DYNAMODB_TABLE: Estudiante  # Nombre de la tabla DynamoDB en variable de entorno
     events:
@@ -22,13 +22,36 @@ functions:
                 ID-Estudiante: false
                 Email: false
 
+  eliminarEstudiante:
+    handler: handler.eliminar_estudiante  # Define el manejador de eliminar
+    environment:
+      DYNAMODB_TABLE: Estudiante
+    events:
+      - http:
+          path: estudiantes/eliminar
+          method: delete
+          request:
+            parameters:
+              querystrings:
+                ID-Estudiante: true
+                DNI: true
+
+  modificarEstudiante:
+    handler: handler.modificar_estudiante  # Define el manejador de modificar
+    environment:
+      DYNAMODB_TABLE: Estudiante
+    events:
+      - http:
+          path: estudiantes/modificar
+          method: put
+
 resources:
   Resources:
     EstudianteTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: Estudiante
-        BillingMode: PAY_PER_REQUEST
+        BillingMode: PAY_PER_REQUEST  # Configuración para modo bajo demanda
         AttributeDefinitions:
           - AttributeName: ID-Estudiante
             AttributeType: S
