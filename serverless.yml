@@ -16,6 +16,7 @@ functions:
       - http:
           path: estudiantes/buscar
           method: get
+          cors: true
           request:
             parameters:
               querystrings:
@@ -30,6 +31,7 @@ functions:
       - http:
           path: estudiantes/eliminar
           method: delete
+          cors: true
           request:
             parameters:
               querystrings:
@@ -44,6 +46,7 @@ functions:
       - http:
           path: estudiantes/modificar
           method: put
+          cors: true
 
 resources:
   Resources:
